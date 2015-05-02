@@ -22,7 +22,7 @@ public:
 	ScalarField(void);
 	ScalarField(std::vector<float> argRowDataPoints, std::vector<float> argColumnDataPoints);
 	void printValueMatrix(void); //Debug
-	void getDataFromFile(const char *argFileName);
+	void fetchDataFromFile(const char *argFileName);
 	void appendRow(std::vector<float> argData);
 	float getInterpolatedData(float argRowKey, float argColumnKey);
 };

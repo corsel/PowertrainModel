@@ -21,7 +21,7 @@ void ScalarField::printValueMatrix() //Debug
 		std::cout << std::endl;
 	}
 }
-void ScalarField::getDataFromFile(const char *filePath) //Ramazan Alper
+void ScalarField::fetchDataFromFile(const char *filePath) //Ramazan Alper
 {
 	columnDataPoints.clear();
 	rowDataPoints.clear();
@@ -36,21 +36,18 @@ void ScalarField::getDataFromFile(const char *filePath) //Ramazan Alper
 	char buffer[255];
 
 	inputFile.open(filePath);
-
-	if (inputFile.is_open()){
-
-		while (std::getline(inputFile, line)){
-			strcpy(buffer, line.c_str());
-			buffer[line.length()] = '\0';
-			rowCount++;
-			char *token = strtok(buffer, ",");
-			while (token){
-				float inVal = 0;
-				sscanf(token, "%f", &inVal);
-				data.push_back(inVal);
-				token = strtok(NULL, ",");
-				totalCount++;
-			}
+	if (!inputFile.is_open()) return;
+	while (std::getline(inputFile, line)){
+		strcpy(buffer, line.c_str());
+		buffer[line.length()] = '\0';
+		rowCount++;
+		char *token = strtok(buffer, ",");
+		while (token){
+			float inVal = 0;
+			sscanf(token, "%f", &inVal);
+			data.push_back(inVal);
+			token = strtok(NULL, ",");
+			totalCount++;
 		}
 	}
 	columnCount = totalCount / rowCount;
@@ -91,6 +88,11 @@ void ScalarField::appendRow(std::vector<float> argData)
 }
 float ScalarField::getInterpolatedData(float argRowKey, float argColumnKey)
 {
+	if (rowDataPoints.size() < 2 || columnDataPoints.size() < 2)
+	{
+		std::cout << "ScalarField::getInterpolatedData warning: Too few data points.\n\trowDataPoints.size(): " << rowDataPoints.size() << "\n\tcolumnDataPoints.size(): " << columnDataPoints.size() << std::endl;
+		return 0.0f;
+	}
 	int	lowRowIndex = 0,
 		lowColumnIndex = 0;
 	if (argRowKey < rowDataPoints[0] ||
