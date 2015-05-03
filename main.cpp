@@ -1,5 +1,9 @@
-﻿#include <iostream>
+#include <iostream>
+
+#ifdef TEST_MODE
 #include "Tester.h"
+#endif
+
 #include "Utilities.h"
 #include "Powertrain.h"
 
@@ -29,6 +33,10 @@ int main()
 	{
 		powertrain.update(PowertrainInput(1.0f, 1.0f, 0.0f, 1000.0f));
 	}
+	
+	#ifdef TEST_MODE
+	std::cout << "test mode.\n";
+	#endif
 	
 	int a; std::cin >> a;
 

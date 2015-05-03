@@ -11,7 +11,7 @@ class Tester
 {
 private:
 	std::vector<float> value;
-	std::string logFileName;
+	char* logFileName;
 	std::vector<std::string> dataTags;
 	std::ofstream file;
 

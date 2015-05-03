@@ -37,6 +37,7 @@ void ScalarField::fetchDataFromFile(const char *filePath) //Ramazan Alper
 
 	inputFile.open(filePath);
 	if (!inputFile.is_open()) return;
+	
 	while (std::getline(inputFile, line)){
 		strcpy(buffer, line.c_str());
 		buffer[line.length()] = '\0';

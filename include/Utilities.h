@@ -1,11 +1,11 @@
 #ifndef UTILITIES_H_INCLUDED
 #define UTILITIES_H_INCLUDED
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
+#include <string.h>
 #include <vector>
 #include <fstream>
-#include <string>
 
 struct Power
 {
@@ -14,7 +14,7 @@ struct Power
 class ScalarField
 {
 private:
-	std::vector<std::vector<float>>	value;
+	std::vector< std::vector<float> >	value;
 	std::vector<float>	rowDataPoints,
 						columnDataPoints;
 
