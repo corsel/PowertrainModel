@@ -1,5 +1,7 @@
 #include <iostream>
 
+#define TEST_MODE
+
 #ifdef TEST_MODE
 #include "Tester.h"
 #endif

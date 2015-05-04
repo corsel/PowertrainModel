@@ -1,8 +1,6 @@
 #ifndef POWERTRAIN_H_INCLUDED
 #define POWERTRAIN_H_INCLUDED
 
-//#define TEST_MODE 
-
 #include "Utilities.h"
 #ifdef TEST_MODE
 #include "Tester.h"

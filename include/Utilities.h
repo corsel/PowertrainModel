@@ -3,7 +3,11 @@
 //#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
+#ifdef _WIN32
+#include <string>
+#else
 #include <string.h>
+#endif
 #include <vector>
 #include <fstream>
 
