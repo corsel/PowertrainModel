@@ -4,16 +4,26 @@
 DummyWheel::DummyWheel() {}
 DummyWheel::DummyWheel(float argInertia, float argViscousFriction, float argTimeStep)
 : inertia(argInertia), viscousFriction(argViscousFriction), timeStep(argTimeStep) {}
-void DummyWheel::update(float argTorque, float &argWheelAngularSpeed, float &argFeedbackTorque)
+void DummyWheel::update(float argTorque, float *argFeedbackTorque)
 {
-	angularSpeed += (argTorque - angularSpeed * viscousFriction) * timeStep / inertia;
+	angularSpeed += Utils::radPerSecToRpm((argTorque - Utils::rpmToRadPerSec(angularSpeed) * viscousFriction) * timeStep / inertia);
 	if (angularSpeed < 0.0f) angularSpeed = 0.0f;
-	argFeedbackTorque = angularSpeed * viscousFriction;
-	argWheelAngularSpeed = angularSpeed;
+	if (argFeedbackTorque != 0)
+		*argFeedbackTorque = angularSpeed * viscousFriction;
 }
-
 //Tester Class
-Tester::Tester()
+Tester::Tester(TestCase argTestCase)
+: dummyWheel(argTestCase.dummyWheel)
 {
-
+	engine = new Engine(argTestCase.engineProps);
+	gearBox = new GearBox(argTestCase.gearBoxProps);
+	differential = new Differential(argTestCase.differentialProps);
+	powertrain = new Powertrain(engine, gearBox, differential, argTestCase.timestep);
+}
+Tester::~Tester()
+{
+	delete[] engine;
+	delete[] gearBox;
+	delete[] differential;
+	delete[] powertrain;
 }
