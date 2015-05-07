@@ -1,12 +1,12 @@
-#include "Powertrain.h"
+﻿#include "Powertrain.h"
 
 //Engine Class
 EngineProps::EngineProps() {}
-EngineProps::EngineProps(ScalarField argTorqueMap, float argInertia, float argClutchViscosity, float argInternalLoss)
-: torqueMap(argTorqueMap), inertia(argInertia), clutchViscosity(argClutchViscosity), internalLoss(argInternalLoss) {}
+EngineProps::EngineProps(ScalarField argTorqueMap, float argInertia, float argClutchMaxViscosity, float argInternalLoss)
+: torqueMap(argTorqueMap), inertia(argInertia), clutchMaxViscosity(argClutchMaxViscosity), internalLoss(argInternalLoss) {}
 
 Engine::Engine(EngineProps argProperties, Powertrain *argParent)
-: properties(argProperties), parent(argParent) {}
+: properties(argProperties), parent(argParent), flywheelAngularSpeed(10.0f) {}
 
 //GearBox Class
 GearBoxProps::GearBoxProps() {}
@@ -17,7 +17,7 @@ GearBox::GearBox(GearBoxProps argProperties, Powertrain *argParent)
 : properties(argProperties), parent(argParent), activeGear(0) {}
 void GearBox::setGear(int argGear)
 {
-
+	activeGear = argGear;
 }
 
 //Differential Class
@@ -30,45 +30,25 @@ Differential::Differential(DifferentialProps argProperties, Powertrain *argParen
 
 //Powertrain Class
 PowertrainInput::PowertrainInput() {}
-PowertrainInput::PowertrainInput(float argClutch, float argThrottle, float argWheelFriction, float argWheelRpm)
-: clutch(argClutch), throttle(argThrottle), wheelFriction(argWheelFriction), wheelRpm(argWheelRpm) {}
+PowertrainInput::PowertrainInput(float argClutch, float argThrottle, float argFeedbackTorque, float argWheelAngularSpeed)
+: clutch(argClutch), throttle(argThrottle), feedbackTorque(argFeedbackTorque), wheelAngularSpeed(argWheelAngularSpeed) {}
 
 Powertrain::Powertrain(Engine *argEngine, GearBox *argGearBox, Differential *argDifferential, float argTimeStep)
-: engine(argEngine), gearBox(argGearBox), differential(argDifferential), timeStep(argTimeStep) 
-{
-#ifdef TEST_MODE
-	std::vector<std::string> dataTags;
-	dataTags.push_back("throttle");
-	dataTags.push_back("clutch");
-	dataTags.push_back("t_wheel");
-	dataTags.push_back("t_flywheel");
-	dataTags.push_back("flywheelRpm");
-	dataTags.push_back("torqueOut");
-	tester.setDataTags(dataTags);
-	tester.bindDataFile("data/EngineTestData.csv");
-#endif
-}
+: engine(argEngine), gearBox(argGearBox), differential(argDifferential), timeStep(argTimeStep), tFlywheelCumulative(0.0f) {}
+Powertrain::~Powertrain() {}
 float Powertrain::update(PowertrainInput argInput)
 {
-	static float	w_w_prev = 0.0f,	//rpm of wheel and engine in previous frame,
-					w_e_prev = 0.0f;	//used to calculate derivatives.
-	
-	float t_wheel = (argInput.wheelRpm - w_w_prev) / gearBox->properties.inertia / timeStep;
-	float t_flywheel = (engine->flywheelRpm - w_e_prev) / engine->properties.inertia / timeStep;
-	w_w_prev = argInput.wheelRpm;
-	w_e_prev = engine->flywheelRpm;
-	//update engine flywheel rpm
-	engine->flywheelRpm = engine->properties.clutchViscosity * (engine->properties.torqueMap.getInterpolatedData(engine->flywheelRpm, argInput.throttle) - t_flywheel) + argInput.wheelRpm;
-	//return torque output
-	float torqueOut = -t_wheel - t_flywheel + engine->properties.torqueMap.getInterpolatedData(engine->flywheelRpm, argInput.throttle);
-#ifdef TEST_MODE
-	tester.appendData(argInput.throttle);
-	tester.appendData(argInput.clutch);
-	tester.appendData(t_wheel);
-	tester.appendData(t_flywheel);
-	tester.appendData(engine->flywheelRpm);
-	tester.appendData(torqueOut);
-	tester.flush();
-#endif
+	if (engine->flywheelAngularSpeed < 10.0f)
+	{
+		std::cout << "Powertrain::update debug: Engine idle interference.\n";
+		argInput.throttle += 0.05f;
+	}
+	float t_eng = engine->properties.torqueMap.getInterpolatedData(Utils::radPerSecToRpm(engine->flywheelAngularSpeed), argInput.throttle);
+	float t_loss = engine->properties.internalLoss * engine->flywheelAngularSpeed;
+	float t_flywheel = t_eng - t_loss - argInput.feedbackTorque;
+	tFlywheelCumulative += t_flywheel * timeStep;
+	engine->flywheelAngularSpeed = tFlywheelCumulative / engine->properties.inertia;
+	float torqueOut = (argInput.wheelAngularSpeed - engine->flywheelAngularSpeed) * engine->properties.clutchMaxViscosity * argInput.clutch;
+
 	return torqueOut;
 }

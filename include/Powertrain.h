@@ -2,9 +2,6 @@
 #define POWERTRAIN_H_INCLUDED
 
 #include "Utilities.h"
-#ifdef TEST_MODE
-#include "Tester.h"
-#endif
 
 class Powertrain; //forward decleration 
 
@@ -13,10 +10,10 @@ struct EngineProps
 	ScalarField torqueMap;
 	float inertia;
 	float internalLoss;
-	float clutchViscosity;
+	float clutchMaxViscosity;
 
 	EngineProps(void);
-	EngineProps(ScalarField argTorqueMap, float argInertia, float argClutchViscosity = 1.0f,  float argInternalLoss = 0.0f);
+	EngineProps(ScalarField argTorqueMap, float argInertia, float argClutchMaxViscosity = 1.0f,  float argInternalLoss = 0.0f);
 };
 class Engine
 {
@@ -25,8 +22,7 @@ private:
 	EngineProps properties;
 	Powertrain *parent;
 
-	float clutch;
-	float flywheelRpm;
+	float flywheelAngularSpeed;
 
 public:
 	Engine(EngineProps argProperties, Powertrain *argParent = 0);
@@ -77,11 +73,11 @@ struct PowertrainInput
 {
 	float clutch;
 	float throttle;
-	float wheelFriction;
-	float wheelRpm;
+	float feedbackTorque;
+	float wheelAngularSpeed;
 
 	PowertrainInput();
-	PowertrainInput(float argClutch, float argThrottle, float argWheelFriction, float argWheelRpm);
+	PowertrainInput(float argClutch, float argThrottle, float argFeedbackTorque, float argWheelAngularSpeed);
 };
 class Powertrain
 {
@@ -90,12 +86,12 @@ private:
 	GearBox *gearBox;
 	Differential *differential;
 	float timeStep;
-#ifdef TEST_MODE
-	Tester tester;
-#endif
+	float tFlywheelCumulative; //integration
+	float frozenTFlywheelCumulative;
 
 public:
 	Powertrain(Engine *argEngine, GearBox *argGearBox, Differential *argDifferential, float argTimeStep = 0.0333333f); //default to 30fps
+	~Powertrain(void);
 	float update(PowertrainInput argInput);
 };
 

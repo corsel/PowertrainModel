@@ -1,28 +1,35 @@
 #ifndef TESTER_H_INCLUDED
 #define TESTER_H_INCLUDED
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <time.h>
+#include "Powertrain.h"
+#include "Logger.h"
+
+class DummyWheel
+{
+private:
+	float inertia;
+	float viscousFriction;
+	float timeStep;
+	float angularSpeed;
+
+public:
+	DummyWheel(void);
+	DummyWheel(float argInertia, float argViscousFriction, float argTimeStep = 0.03333333f);
+	void update(float argInputTorque, float &argWheelAngularSpeed, float &argFeedbackTorque);
+};
 
 class Tester
 {
 private:
-	std::vector<float> value;
-	char* logFileName;
-	std::vector<std::string> dataTags;
-	std::ofstream file;
+	Engine *engine;
+	GearBox *gearbox;
+	Differential *differential;
+	Powertrain *powertrain;
+
+	Logger logger;
 
 public:
 	Tester(void);
-	Tester(char *argLogFileName);
-	void setDataTags(std::vector<std::string> argDataTags);
-	void bindDataFile(char *argLogFileName);
-	void appendData(float argValue);
-	void flush(void);
-	void shutdown(void);
 };
 
-#endif
+#endif //TESTER_H_INCLUDED

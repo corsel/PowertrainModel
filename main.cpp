@@ -1,21 +1,13 @@
 #include <iostream>
-
-#define TEST_MODE
-
-#ifdef TEST_MODE
-#include "Tester.h"
-#endif
-
 #include "Utilities.h"
 #include "Powertrain.h"
 
 int main()
 {
-	
 	ScalarField torqueMap;
 	torqueMap.fetchDataFromFile("data/EngineMap.csv");
 
-	EngineProps engineProps(torqueMap, 1.0f);
+	EngineProps engineProps(torqueMap, 10.0f, 3.0f, 0.2f);
 	Engine engine(engineProps);
 
 	std::vector<float> gearRatio;
@@ -29,18 +21,13 @@ int main()
 	DifferentialProps differentialProps(0.5f);
 	Differential differential(differentialProps);
 
-	Powertrain powertrain(&engine, &gearBox, &differential);
+	Powertrain powertrain(&engine, &gearBox, &differential, 0.003333333f);
 	
-	for (int i = 0; i < 1000; i++)
-	{
-		powertrain.update(PowertrainInput(1.0f, 1.0f, 0.0f, 1000.0f));
-	}
-	
-	#ifdef TEST_MODE
-	std::cout << "test mode.\n";
-	#endif
-	
-	int a; std::cin >> a;
+	PowertrainInput input;
+	input.clutch = 0.5f;
+	input.throttle = 0.7f;
+	input.wheelAngularSpeed= 50.0f;
+	input.feedbackTorque = 100.0f;
 
 	return 0;
 }

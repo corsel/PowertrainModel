@@ -31,4 +31,17 @@ public:
 	float getInterpolatedData(float argRowKey, float argColumnKey);
 };
 
+namespace Utils
+{
+const float pi = 3.141593f;
+
+inline float radPerSecToRpm(float argRadPerSec)
+{
+	return (argRadPerSec / 2.0f / pi * 60.0f);
+}
+inline float rpmToRadPerSec(float argRpm)
+{
+	return (argRpm / 60.0f * 2.0f * pi);
+}
+}
 #endif //UTILITIES_H_INCLUDED
